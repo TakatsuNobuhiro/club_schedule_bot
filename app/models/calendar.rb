@@ -3,7 +3,7 @@ require "googleauth"
 require "googleauth/stores/file_token_store"
 require "date"
 require "fileutils"
-class Calendar < ActiveRecord::Base
+class Calendar 
   OOB_URI = ENV["OOB_URI"].freeze
   APPLICATION_NAME = ENV["APPLICATION_NAME"].freeze
   
@@ -20,16 +20,30 @@ class Calendar < ActiveRecord::Base
   #
   # @return [Google::Auth::UserRefreshCredentials] OAuth2 credentials
 
-  def index 
-  end 
 
   def authorize
-      client_id = ENV["CLIENT_ID"]
+      secret_hash = {
+        "web" => {
+          "client_id"     => ENV["CLIENT_ID"],
+          "project_id" => ENV["PROJECT_ID"],
+          "auth_uri" => ENV["AUTH_URI"],
+          "token_uri" => ENV["TOKEN_URI"],
+          "auth_provider_x509_cert_url" => ENV["PROVIDER_URI"],
+          "client_secret" => ENV["CLIENT_SECRET"],
+          "redirect_uris" => [ENV["REDIRECT_URIS"]],
+          "javascript_origins" => [ENV["JAVASCRIPT_ORIGINS"]]
+        }
+      }
+  
+      client_id = Google::Auth::ClientId.from_hash secret_hash
       
       token_store = Google::Auth::Stores::FileTokenStore.new file: TOKEN_PATH
       authorizer = Google::Auth::UserAuthorizer.new client_id, SCOPE, token_store
       
+
+
       user_id = ENV["MAIL"]
+      
       credentials = authorizer.get_credentials user_id
       
       if credentials.nil?
@@ -49,25 +63,29 @@ class Calendar < ActiveRecord::Base
   end
   # Initialize the API
   def initialize
-      service = Google::Apis::CalendarV3::CalendarService.new
-      service.client_options.application_name = APPLICATION_NAME
-      service.authorization = authorize
+      @service = Google::Apis::CalendarV3::CalendarService.new
+      @service.client_options.application_name = APPLICATION_NAME
+      @service.authorization = authorize
   end
 
-  def fetchEvents(service)
+  def fetchEvents
       
       # Fetch the next 10 events for the user
       calendar_id = ENV["CALENDAR_ID"]
-      response = service.list_events(calendar_id,
-                                  max_results:   10,
+
+      response = @service.list_events(calendar_id,
+                                  max_results:   1,
                                   single_events: true,
                                   order_by:      "startTime",
                                   time_min:      DateTime.now.rfc3339)
-      puts "Upcoming events:"
+
       puts "No upcoming events found" if response.items.empty?
-      response.items.each do |event|
-          start = event.start.date || event.start.date_time
-          puts "- #{event.summary} (#{start})"
-      end
+      puts response.items.first
+      # response.items.each do |event|
+      #     start = event.start.date || event.start.date_time
+      #     puts "- #{event.summary} (#{start})"
+      # end
+      return response
+
   end
 end

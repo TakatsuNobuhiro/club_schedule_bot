@@ -11,13 +11,16 @@ class WebhookController < ApplicationController
   end
 
   def callback
+    
     body = request.body.read
 
     signature = request.env['HTTP_X_LINE_SIGNATURE']
     unless client.validate_signature(body, signature)
       head 470
     end
-    tokyo_tech_calendar = Calendar.new 
+    club_calendar = Calendar.new
+    result = club_calendar.fetchEvents
+
     
     events = client.parse_events_from(body)
     events.each { |event|
@@ -27,7 +30,7 @@ class WebhookController < ApplicationController
         when Line::Bot::Event::MessageType::Text
           message = {
             type: 'text',
-            text: tokyo_tech_calendar.get_schedule
+            text: result.to_s
           }
           client.reply_message(event['replyToken'], message)
         when Line::Bot::Event::MessageType::Image, Line::Bot::Event::MessageType::Video
