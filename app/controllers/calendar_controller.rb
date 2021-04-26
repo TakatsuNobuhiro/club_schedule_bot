@@ -4,8 +4,8 @@ require "googleauth/stores/file_token_store"
 require "date"
 require "fileutils"
 class CalendarController < ApplicationController
-    OOB_URI = "https://d91221407360.ngrok.io/oauth2callback".freeze
-    APPLICATION_NAME = "calendar".freeze
+    OOB_URI = ENV["OOBURL"].freeze
+    APPLICATION_NAME = ENV["APPLICATION_NAME"].freeze
     CREDENTIALS_PATH = "client_secret.json".freeze
     # The file token.yaml stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
@@ -29,7 +29,7 @@ class CalendarController < ApplicationController
         token_store = Google::Auth::Stores::FileTokenStore.new file: TOKEN_PATH
         authorizer = Google::Auth::UserAuthorizer.new client_id, SCOPE, token_store
         
-        user_id = "tokyotech2015@gmail.com"
+        user_id = ENV["MAIL"]
         credentials = authorizer.get_credentials user_id
         
         if credentials.nil?
