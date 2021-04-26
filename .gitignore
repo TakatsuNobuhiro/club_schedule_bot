@@ -22,4 +22,5 @@
 /.ruby-version
 
 /.env
-/.client_secret.json
+/client_secret.json
+/.token.yaml
