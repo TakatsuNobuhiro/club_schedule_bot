@@ -47,20 +47,6 @@ class Calendar < ActiveRecord::Base
       end
       credentials
   end
-  def callback
-      #urlのcodeをsessionに格納
-
-      session[:code] = params[:code]
-      #念の為値をターミナルに吐き出す
-      logger.debug(session[:code])
-      calendar = Google::Apis::CalendarV3::CalendarService.new
-      calendar.client_options.application_name = APPLICATION_NAME
-      
-      calendar.authorization = authorize
-      #実際のイベントを取得
-      fetchEvents(calendar)
-      redirect_to action: :index
-  end
   # Initialize the API
   def initialize
       service = Google::Apis::CalendarV3::CalendarService.new
