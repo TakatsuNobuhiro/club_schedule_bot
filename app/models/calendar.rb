@@ -72,12 +72,14 @@ class Calendar
       
       # Fetch the next 10 events for the user
       calendar_id = ENV["CALENDAR_ID"]
-
+      binding.pry
+      now = DateTime.now + 1
       response = @service.list_events(calendar_id,
-                                  max_results:   1,
+                                  max_results:   5,
                                   single_events: true,
                                   order_by:      "startTime",
-                                  time_min:      DateTime.now.rfc3339)
+                                  time_min:      DateTime.new(now.year,now.month,now.day,0,0,0),
+                                  time_max:      DateTime.now + 1 )
 
       puts "No upcoming events found" if response.items.empty?
       puts response.items.first
@@ -85,7 +87,15 @@ class Calendar
       #     start = event.start.date || event.start.date_time
       #     puts "- #{event.summary} (#{start})"
       # end
-      return response
-
+      
+      
+      start_time = response.items.first.start.date_time.strftime("%H:%M")
+      end_time = response.items.first.end.date_time.strftime("%H:%M")
+      location = response.items.first.location
+      title = response.items.first.summary
+      result = "明日は#{start_time}から#{end_time}まで#{location}で#{title}があります。"
+      
+      
+      return result
   end
 end
