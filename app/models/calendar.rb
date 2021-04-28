@@ -72,28 +72,28 @@ class Calendar
       
       # Fetch the next 10 events for the user
       calendar_id = ENV["CALENDAR_ID"]
-      binding.pry
+    
       now = DateTime.now + 1
       response = @service.list_events(calendar_id,
                                   max_results:   5,
                                   single_events: true,
                                   order_by:      "startTime",
                                   time_min:      DateTime.new(now.year,now.month,now.day,0,0,0),
-                                  time_max:      DateTime.now + 1 )
+                                  time_max:      DateTime.new(now.year,now.month,now.day,23,59,59) )
 
-      puts "No upcoming events found" if response.items.empty?
-      puts response.items.first
-      # response.items.each do |event|
-      #     start = event.start.date || event.start.date_time
-      #     puts "- #{event.summary} (#{start})"
-      # end
       
-      
-      start_time = response.items.first.start.date_time.strftime("%H:%M")
-      end_time = response.items.first.end.date_time.strftime("%H:%M")
-      location = response.items.first.location
-      title = response.items.first.summary
-      result = "明日は#{start_time}から#{end_time}まで#{location}で#{title}があります。"
+      if response.items.empty?
+        result = '予定無し'
+      else
+        
+        event =response.items.first
+        start_time = event.start.date_time.in_time_zone('Tokyo').strftime("%H:%M")
+        end_time = event.end.date_time.in_time_zone('Tokyo').strftime("%H:%M")
+        location = event.location
+        title = event.summary
+        result = "明日は#{start_time}から#{end_time}まで#{location}で#{title}があります。\n欠席or遅刻者は背番号＋（スペース）遅刻or欠席+（スペース）理由の形式でご回答ください。\n(例)21番 欠席 授業があるため"
+
+      end
       
       
       return result
