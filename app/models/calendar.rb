@@ -23,9 +23,7 @@ class Calendar
 
   def authorize
     # 環境変数の定義
-    OOB_URI = ENV["OOB_URI"].freeze
-    TOKEN_PATH = "token.yaml".freeze
-    SCOPE = Google::Apis::CalendarV3::AUTH_CALENDAR_READONLY
+    uri = ENV["OOB_URI"].freeze
     user_id = ENV["MAIL"]
 
       secret_hash = {
@@ -40,21 +38,21 @@ class Calendar
           "javascript_origins" => [ENV["JAVASCRIPT_ORIGINS"]]
         }
       }
-      herokuの環境的にheroku
+      # herokuの環境的に環境変数から読み込んだほうが良い
       client_id = Google::Auth::ClientId.from_hash secret_hash   
-      token_store = Google::Auth::Stores::FileTokenStore.new file: TOKEN_PATH
-      authorizer = Google::Auth::UserAuthorizer.new client_id, SCOPE, token_store
+      token_store = Google::Auth::Stores::FileTokenStore.new file: "token.yaml".freeze
+      authorizer = Google::Auth::UserAuthorizer.new client_id, Google::Apis::CalendarV3::AUTH_CALENDAR_READONLY, token_store
       
       credentials = authorizer.get_credentials user_id
       
       if !credentials
-          url = authorizer.get_authorization_url base_url: OOB_URI
+          url = authorizer.get_authorization_url base_url: uri
           puts "Open the following URL in the browser and enter the " \
               "resulting code after authorization:\n" + url
           code = ENV["CODE"]
           
           credentials = authorizer.get_and_store_credentials_from_code(
-          user_id: user_id, code: code, base_url: OOB_URI
+          user_id: user_id, code: code, base_url: uri
           )
           
           

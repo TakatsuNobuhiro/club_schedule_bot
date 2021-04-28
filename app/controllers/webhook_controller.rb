@@ -19,7 +19,7 @@ class WebhookController < ApplicationController
       head 470
     end
     club_calendar = Calendar.new
-    result = club_calendar.fetchEvents
+    result = club_calendar.fetch_events
     
     
     events = client.parse_events_from(body)
