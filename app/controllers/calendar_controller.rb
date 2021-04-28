@@ -57,31 +57,9 @@ class CalendarController < ApplicationController
         calendar.client_options.application_name = APPLICATION_NAME
         
         calendar.authorization = authorize
-        #実際のイベントを取得
-        fetchEvents(calendar)
+    
         redirect_to action: :index
     end
-    # Initialize the API
-    def initialize
-        service = Google::Apis::CalendarV3::CalendarService.new
-        service.client_options.application_name = APPLICATION_NAME
-        service.authorization = authorize
-    end
 
-    def fetchEvents(service)
-        
-        # Fetch the next 10 events for the user
-        calendar_id = ENV["CALENDAR_ID"]
-        response = service.list_events(calendar_id,
-                                    max_results:   10,
-                                    single_events: true,
-                                    order_by:      "startTime",
-                                    time_min:      DateTime.now.rfc3339)
-        puts "Upcoming events:"
-        puts "No upcoming events found" if response.items.empty?
-        response.items.each do |event|
-            start = event.start.date || event.start.date_time
-            puts "- #{event.summary} (#{start})"
-        end
-    end
+
 end
