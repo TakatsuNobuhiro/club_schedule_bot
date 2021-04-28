@@ -23,30 +23,6 @@ class CalendarController < ApplicationController
     def index 
     end 
 
-    def authorize
-        client_id = ENV["CLIENT_ID"]
-        
-        token_store = Google::Auth::Stores::FileTokenStore.new file: TOKEN_PATH
-        authorizer = Google::Auth::UserAuthorizer.new client_id, SCOPE, token_store
-        
-        user_id = ENV["MAIL"]
-        credentials = authorizer.get_credentials user_id
-        
-        if credentials.nil?
-            url = authorizer.get_authorization_url base_url: OOB_URI
-            puts "Open the following URL in the browser and enter the " \
-                "resulting code after authorization:\n" + url
-            code = ENV["CODE"]
-            
-            credentials = authorizer.get_and_store_credentials_from_code(
-            user_id: user_id, code: code, base_url: OOB_URI
-            )
-            
-            
-            
-        end
-        credentials
-    end
     def callback
         #urlのcodeをsessionに格納
 
@@ -55,8 +31,10 @@ class CalendarController < ApplicationController
         logger.debug(session[:code])
         calendar = Google::Apis::CalendarV3::CalendarService.new
         calendar.client_options.application_name = APPLICATION_NAME
+        # カレンダーモデルからauthorizeを呼び出す
+        club_calendar = Calendar.new
         
-        calendar.authorization = authorize
+        calendar.authorization = club_calendar.authorize
     
         redirect_to action: :index
     end
