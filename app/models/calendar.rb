@@ -4,14 +4,14 @@ require "googleauth/stores/file_token_store"
 require "date"
 require "fileutils"
 class Calendar 
-  OOB_URI = ENV["OOB_URI"].freeze
-  APPLICATION_NAME = ENV["APPLICATION_NAME"].freeze
+  
+  
   
   # The file token.yaml stores the user's access and refresh tokens, and is
   # created automatically when the authorization flow completes for the first
   # time.
-  TOKEN_PATH = "token.yaml".freeze
-  SCOPE = Google::Apis::CalendarV3::AUTH_CALENDAR_READONLY
+  
+  
   
   ##
   # Ensure valid credentials, either by restoring from the saved credentials
@@ -22,6 +22,12 @@ class Calendar
 
 
   def authorize
+    # 環境変数の定義
+    OOB_URI = ENV["OOB_URI"].freeze
+    TOKEN_PATH = "token.yaml".freeze
+    SCOPE = Google::Apis::CalendarV3::AUTH_CALENDAR_READONLY
+    user_id = ENV["MAIL"]
+
       secret_hash = {
         "web" => {
           "client_id"     => ENV["CLIENT_ID"],
@@ -34,19 +40,14 @@ class Calendar
           "javascript_origins" => [ENV["JAVASCRIPT_ORIGINS"]]
         }
       }
-  
-      client_id = Google::Auth::ClientId.from_hash secret_hash
-      
+      herokuの環境的にheroku
+      client_id = Google::Auth::ClientId.from_hash secret_hash   
       token_store = Google::Auth::Stores::FileTokenStore.new file: TOKEN_PATH
       authorizer = Google::Auth::UserAuthorizer.new client_id, SCOPE, token_store
       
-
-
-      user_id = ENV["MAIL"]
-      
       credentials = authorizer.get_credentials user_id
       
-      if credentials.nil?
+      if !credentials
           url = authorizer.get_authorization_url base_url: OOB_URI
           puts "Open the following URL in the browser and enter the " \
               "resulting code after authorization:\n" + url
@@ -64,11 +65,11 @@ class Calendar
   # Initialize the API
   def initialize
       @service = Google::Apis::CalendarV3::CalendarService.new
-      @service.client_options.application_name = APPLICATION_NAME
+      @service.client_options.application_name = ENV["APPLICATION_NAME"].freeze
       @service.authorization = authorize
   end
 
-  def fetchEvents
+  def fetch_events
       
       # Fetch the next 10 events for the user
       calendar_id = ENV["CALENDAR_ID"]
