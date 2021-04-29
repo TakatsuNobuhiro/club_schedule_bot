@@ -23,7 +23,7 @@ class Calendar
 
   def authorize
     # 環境変数の定義
-    uri = ENV["OOB_URI"].freeze
+    uri = ENV["OOB_URI"]
     user_id = ENV["MAIL"]
 
       secret_hash = {
@@ -40,7 +40,7 @@ class Calendar
       }
       # herokuの環境的に環境変数から読み込んだほうが良い
       client_id = Google::Auth::ClientId.from_hash secret_hash   
-      token_store = Google::Auth::Stores::FileTokenStore.new file: "token.yaml".freeze
+      token_store = Google::Auth::Stores::FileTokenStore.new file: "token.yaml"
       authorizer = Google::Auth::UserAuthorizer.new client_id, Google::Apis::CalendarV3::AUTH_CALENDAR_READONLY, token_store
       
       credentials = authorizer.get_credentials user_id
@@ -63,15 +63,12 @@ class Calendar
   # Initialize the API
   def initialize
       @service = Google::Apis::CalendarV3::CalendarService.new
-      @service.client_options.application_name = ENV["APPLICATION_NAME"].freeze
+      @service.client_options.application_name = ENV["APPLICATION_NAME"]
       @service.authorization = authorize
   end
 
   def fetch_events
-      
-      # Fetch the next 10 events for the user
       calendar_id = ENV["CALENDAR_ID"]
-    
       now = DateTime.now + 1
       response = @service.list_events(calendar_id,
                                   max_results:   5,
@@ -79,22 +76,5 @@ class Calendar
                                   order_by:      "startTime",
                                   time_min:      DateTime.new(now.year,now.month,now.day,0,0,0),
                                   time_max:      DateTime.new(now.year,now.month,now.day,23,59,59) )
-
-      
-      if response.items.empty?
-        result = '予定無し'
-      else
-        
-        event =response.items.first
-        start_time = event.start.date_time.in_time_zone('Tokyo').strftime("%H:%M")
-        end_time = event.end.date_time.in_time_zone('Tokyo').strftime("%H:%M")
-        location = event.location
-        title = event.summary
-        result = "明日は#{start_time}から#{end_time}まで#{location}で#{title}があります。\n欠席or遅刻者は背番号＋（スペース）遅刻or欠席+（スペース）理由の形式でご回答ください。\n(例)21番 欠席 授業があるため"
-
-      end
-      
-      
-      return result
   end
 end

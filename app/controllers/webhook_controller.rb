@@ -18,8 +18,9 @@ class WebhookController < ApplicationController
     unless client.validate_signature(body, signature)
       head 470
     end
-    club_calendar = Calendar.new
-    result = club_calendar.fetch_events
+    
+    message = Message.new
+    result = message.organize_from_calendar
     
     
     events = client.parse_events_from(body)
