@@ -23,7 +23,7 @@ class Calendar
 
   def authorize
     # 環境変数の定義
-    uri = ENV["OOB_URI"].freeze
+    uri = ENV["OOB_URI"]
     user_id = ENV["MAIL"]
 
       secret_hash = {
@@ -40,7 +40,7 @@ class Calendar
       }
       # herokuの環境的に環境変数から読み込んだほうが良い
       client_id = Google::Auth::ClientId.from_hash secret_hash   
-      token_store = Google::Auth::Stores::FileTokenStore.new file: "token.yaml".freeze
+      token_store = Google::Auth::Stores::FileTokenStore.new file: "token.yaml"
       authorizer = Google::Auth::UserAuthorizer.new client_id, Google::Apis::CalendarV3::AUTH_CALENDAR_READONLY, token_store
       
       credentials = authorizer.get_credentials user_id
@@ -63,7 +63,7 @@ class Calendar
   # Initialize the API
   def initialize
       @service = Google::Apis::CalendarV3::CalendarService.new
-      @service.client_options.application_name = ENV["APPLICATION_NAME"].freeze
+      @service.client_options.application_name = ENV["APPLICATION_NAME"]
       @service.authorization = authorize
   end
 
