@@ -69,7 +69,6 @@ class Calendar
 
   def fetch_events
       calendar_id = ENV["CALENDAR_ID"]
-    
       now = DateTime.now + 1
       response = @service.list_events(calendar_id,
                                   max_results:   5,
@@ -77,27 +76,5 @@ class Calendar
                                   order_by:      "startTime",
                                   time_min:      DateTime.new(now.year,now.month,now.day,0,0,0),
                                   time_max:      DateTime.new(now.year,now.month,now.day,23,59,59) )
-
-      
-      if response.items.empty?
-        result = '予定無し'
-      else
-        
-        event =response.items.first
-        start_time = event.start.date_time.in_time_zone('Tokyo').strftime("%H:%M")
-        end_time = event.end.date_time.in_time_zone('Tokyo').strftime("%H:%M")
-        location = event.location
-        title = event.summary
-
-        #要件は満たせるけど可読性が微妙
-        #locationがnilではない場合は○○での「で」を追加
-        location += "で" if location
-
-        result = "明日は#{start_time}から#{end_time}まで#{location}#{title}があります。\n欠席or遅刻者は背番号＋（スペース）遅刻or欠席+（スペース）理由の形式でご回答ください。\n(例)21番 欠席 授業があるため"
-
-      end
-      
-      
-      return result
   end
 end
