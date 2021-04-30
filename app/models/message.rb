@@ -6,6 +6,7 @@ class Message
     def initialize 
         @token = ENV["LINE_CHANNEL_TOKEN"]
     end
+
     def organize_from_calendar
         club_calendar = Calendar.new
         response = club_calendar.fetch_events
@@ -43,7 +44,7 @@ class Message
         }
         send_message = self.organize_from_calendar
         # Body
-        params = {"to" => "Ud568cb3da5528cfb0b5d1a3a6f36f6f3", "messages" => [{"type" => "text", "text" => send_message}]}
+        params = {"to" => ENV["LINE_MY_ID"], "messages" => [{"type" => "text", "text" => send_message}]}
         response = http.post(uri.path, params.to_json, headers)
     end
 
