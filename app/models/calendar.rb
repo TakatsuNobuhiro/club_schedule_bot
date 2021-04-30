@@ -4,14 +4,14 @@ require "googleauth/stores/file_token_store"
 require "date"
 require "fileutils"
 class Calendar 
-  OOB_URI = ENV["OOB_URI"].freeze
-  APPLICATION_NAME = ENV["APPLICATION_NAME"].freeze
+  
+  
   
   # The file token.yaml stores the user's access and refresh tokens, and is
   # created automatically when the authorization flow completes for the first
   # time.
-  TOKEN_PATH = "token.yaml".freeze
-  SCOPE = Google::Apis::CalendarV3::AUTH_CALENDAR_READONLY
+  
+  
   
   ##
   # Ensure valid credentials, either by restoring from the saved credentials
@@ -22,6 +22,10 @@ class Calendar
 
 
   def authorize
+    # 環境変数の定義
+    uri = ENV["OOB_URI"]
+    user_id = ENV["MAIL"]
+
       secret_hash = {
         "web" => {
           "client_id"     => ENV["CLIENT_ID"],
@@ -34,26 +38,21 @@ class Calendar
           "javascript_origins" => [ENV["JAVASCRIPT_ORIGINS"]]
         }
       }
-  
-      client_id = Google::Auth::ClientId.from_hash secret_hash
-      
-      token_store = Google::Auth::Stores::FileTokenStore.new file: TOKEN_PATH
-      authorizer = Google::Auth::UserAuthorizer.new client_id, SCOPE, token_store
-      
-
-
-      user_id = ENV["MAIL"]
+      # herokuの環境的に環境変数から読み込んだほうが良い
+      client_id = Google::Auth::ClientId.from_hash secret_hash   
+      token_store = Google::Auth::Stores::FileTokenStore.new file: "token.yaml"
+      authorizer = Google::Auth::UserAuthorizer.new client_id, Google::Apis::CalendarV3::AUTH_CALENDAR_READONLY, token_store
       
       credentials = authorizer.get_credentials user_id
       
-      if credentials.nil?
-          url = authorizer.get_authorization_url base_url: OOB_URI
+      if !credentials
+          url = authorizer.get_authorization_url base_url: uri
           puts "Open the following URL in the browser and enter the " \
               "resulting code after authorization:\n" + url
           code = ENV["CODE"]
           
           credentials = authorizer.get_and_store_credentials_from_code(
-          user_id: user_id, code: code, base_url: OOB_URI
+          user_id: user_id, code: code, base_url: uri
           )
           
           
@@ -64,28 +63,18 @@ class Calendar
   # Initialize the API
   def initialize
       @service = Google::Apis::CalendarV3::CalendarService.new
-      @service.client_options.application_name = APPLICATION_NAME
+      @service.client_options.application_name = ENV["APPLICATION_NAME"]
       @service.authorization = authorize
   end
 
-  def fetchEvents
-      
-      # Fetch the next 10 events for the user
+  def fetch_events
       calendar_id = ENV["CALENDAR_ID"]
-
+      now = DateTime.now + 1
       response = @service.list_events(calendar_id,
-                                  max_results:   1,
+                                  max_results:   5,
                                   single_events: true,
                                   order_by:      "startTime",
-                                  time_min:      DateTime.now.rfc3339)
-
-      puts "No upcoming events found" if response.items.empty?
-      puts response.items.first
-      # response.items.each do |event|
-      #     start = event.start.date || event.start.date_time
-      #     puts "- #{event.summary} (#{start})"
-      # end
-      return response
-
+                                  time_min:      DateTime.new(now.year,now.month,now.day,0,0,0),
+                                  time_max:      DateTime.new(now.year,now.month,now.day,23,59,59) )
   end
 end

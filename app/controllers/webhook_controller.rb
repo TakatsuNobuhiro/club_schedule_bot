@@ -18,9 +18,10 @@ class WebhookController < ApplicationController
     unless client.validate_signature(body, signature)
       head 470
     end
-    club_calendar = Calendar.new
-    result = club_calendar.fetchEvents
-
+    
+    message = Message.new
+    result = message.organize_from_calendar
+    
     
     events = client.parse_events_from(body)
     events.each { |event|
@@ -30,7 +31,7 @@ class WebhookController < ApplicationController
         when Line::Bot::Event::MessageType::Text
           message = {
             type: 'text',
-            text: result.to_s
+            text: result
           }
           client.reply_message(event['replyToken'], message)
         when Line::Bot::Event::MessageType::Image, Line::Bot::Event::MessageType::Video
