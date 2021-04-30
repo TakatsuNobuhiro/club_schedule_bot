@@ -1,4 +1,7 @@
 class Message 
+    require 'net/http'
+    require 'uri'
+    require 'json' 
     def organize_from_calendar
         club_calendar = Calendar.new
         response = club_calendar.fetch_events
@@ -20,4 +23,46 @@ class Message
             end
         end
     end
+
+    def push(send_message)
+        token = ENV["LINE_CHANNEL_TOKEN"]
+        # post先のurl
+        uri = URI.parse('https://api.line.me/v2/bot/message/push')
+        http = Net::HTTP.new(uri.host,uri.port)
+        http.use_ssl = true
+
+        # Header
+        headers = {
+            'Authorization'=>"Bearer #{token}",
+            'Content-Type' =>'application/json',
+            'Accept'=>'application/json'
+        }
+        send_message = self.organize_from_calendar
+        # Body
+        params = {"to" => "Ud568cb3da5528cfb0b5d1a3a6f36f6f3", "messages" => [{"type" => "text", "text" => send_message}]}
+        response = http.post(uri.path, params.to_json, headers)
+    end
+
+    def broad_push
+
+
+        token = ENV["LINE_CHANNEL_TOKEN"]
+        # post先のurl
+        uri = URI.parse('https://api.line.me/v2/bot/message/broadcast')
+        http = Net::HTTP.new(uri.host,uri.port)
+        http.use_ssl = true
+
+        # Header
+        headers = {
+            'Authorization'=>"Bearer #{token}",
+            'Content-Type' =>'application/json',
+            'Accept'=>'application/json'
+        }
+        send_message = self.organize_from_calendar
+        # Body
+        params = {"messages" => [{"type" => "text", "text" => send_message}]}
+        response = http.post(uri.path, params.to_json, headers)
+    end
+
+    
 end

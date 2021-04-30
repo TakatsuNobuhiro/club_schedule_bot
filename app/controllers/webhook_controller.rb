@@ -17,12 +17,8 @@ class WebhookController < ApplicationController
     unless client.validate_signature(body, signature)
       head 470
     end
-    
-    message = Message.new
-    result = message.organize_from_calendar
-    
+    reply_word = "連絡承りました。\n監督にお伝えしておきます。"
 
-    
     events = client.parse_events_from(body)
     events.each { |event|
       case event
@@ -31,9 +27,11 @@ class WebhookController < ApplicationController
         when Line::Bot::Event::MessageType::Text
           message = {
             type: 'text',
-            text: result
+            text: reply_word
           }
           client.reply_message(event['replyToken'], message)
+          message = Message.new
+          message.push(event.message['text'])
         when Line::Bot::Event::MessageType::Image, Line::Bot::Event::MessageType::Video
           response = client.get_message_content(event.message['id'])
           tf = Tempfile.open("content")
