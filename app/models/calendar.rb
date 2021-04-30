@@ -44,7 +44,7 @@ class Calendar
       authorizer = Google::Auth::UserAuthorizer.new client_id, Google::Apis::CalendarV3::AUTH_CALENDAR_READONLY, token_store
       
       credentials = authorizer.get_credentials user_id
-      
+
       if !credentials
           url = authorizer.get_authorization_url base_url: uri
           puts "Open the following URL in the browser and enter the " \
