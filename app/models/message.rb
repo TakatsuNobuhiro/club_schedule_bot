@@ -2,6 +2,10 @@ class Message
     require 'net/http'
     require 'uri'
     require 'json' 
+
+    def initialize 
+        @token = ENV["LINE_CHANNEL_TOKEN"]
+    end
     def organize_from_calendar
         club_calendar = Calendar.new
         response = club_calendar.fetch_events
@@ -25,7 +29,7 @@ class Message
     end
 
     def push(send_message)
-        token = ENV["LINE_CHANNEL_TOKEN"]
+
         # post先のurl
         uri = URI.parse('https://api.line.me/v2/bot/message/push')
         http = Net::HTTP.new(uri.host,uri.port)
@@ -33,7 +37,7 @@ class Message
 
         # Header
         headers = {
-            'Authorization'=>"Bearer #{token}",
+            'Authorization'=>"Bearer #{@token}",
             'Content-Type' =>'application/json',
             'Accept'=>'application/json'
         }
@@ -45,8 +49,6 @@ class Message
 
     def broad_push
 
-
-        token = ENV["LINE_CHANNEL_TOKEN"]
         # post先のurl
         uri = URI.parse('https://api.line.me/v2/bot/message/broadcast')
         http = Net::HTTP.new(uri.host,uri.port)
@@ -54,7 +56,7 @@ class Message
 
         # Header
         headers = {
-            'Authorization'=>"Bearer #{token}",
+            'Authorization'=>"Bearer #{@token}",
             'Content-Type' =>'application/json',
             'Accept'=>'application/json'
         }
