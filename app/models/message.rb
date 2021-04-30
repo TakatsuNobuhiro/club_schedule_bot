@@ -42,9 +42,10 @@ class Message
             'Content-Type' =>'application/json',
             'Accept'=>'application/json'
         }
-        send_message = self.organize_from_calendar
+
         # Body
-        params = {"to" => ENV["LINE_MY_ID"], "messages" => [{"type" => "text", "text" => send_message}]}
+        params = {"to" => ENV['ACCOUNT_ID'], "messages" => [{"type" => "text", "text" => send_message}]}
+
         response = http.post(uri.path, params.to_json, headers)
     end
 
